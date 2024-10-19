@@ -3,25 +3,32 @@ name: Java CI
 on:
   push:
     branches:
-      - main   # This pipeline will run whenever there is a push to the "main" branch
+      - main   # Trigger the pipeline when pushing to the "main" branch
   pull_request:
     branches:
-      - main   # This pipeline will also run for pull requests to the "main" branch
+      - main   # Trigger for pull requests to the "main" branch
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # The job will run on the latest version of Ubuntu
+    runs-on: ubuntu-latest  # Use the latest version of Ubuntu for the build
 
     steps:
+    # Step 1: Checkout the code
     - name: Checkout the code
-      uses: actions/checkout@v3  # Check out the repository code
+      uses: actions/checkout@v3  # Check out your repository's code
 
+    # Step 2: Set up Java 23 using AdoptOpenJDK
     - name: Set up JDK 23
       uses: actions/setup-java@v3
       with:
-        java-version: '23'  # Specify Java version 23
-        distribution: 'adopt'  # Use AdoptOpenJDK as the distribution (you can change this)
-
+        java-version: '23'         # Specify Java version 23
+        distribution: 'adopt'      # Use AdoptOpenJDK distribution
+    
+    # Step 3: Verify Java version (debug step)
+    - name: Verify Java version
+      run: java -version  # Output Java version for debugging
+    
+    # Step 4: Cache Maven dependencies
     - name: Cache Maven dependencies
       uses: actions/cache@v3
       with:
@@ -29,16 +36,27 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
+    
+    # Step 5: Build the project using Maven
+    - name: Build with Maven and force dependency update
+      run: mvn -B clean install -U  # Force update of dependencies to ensure they are up to date
 
-    - name: Build with Maven
-      run: mvn -B clean install  # -B flag is for non-interactive Maven build
-
-    - name: Run Tests
-      run: mvn test  # This will run the tests as part of the build process
-
+    # Step 6: Run Maven tests with verbose logging
+    - name: Run Tests with Verbose Logging
+      run: mvn -B -X test  # Enable full debug output (-X) to gather more details on test failures
+    
+    # Optional: Upload test results (for CI visibility)
     - name: Upload test results (optional)
-      if: always()
+      if: always()  # Ensure test results are uploaded even if the test fails
       uses: actions/upload-artifact@v3
       with:
         name: junit-test-results
-        path: target/surefire-reports/*.xml  # Adjust to the location of your test results if different
+        path: target/surefire-reports/*.xml  # Adjust this path if necessary for test reports
+    
+    # Optional: Upload build artifacts (for debugging purposes)
+    - name: Upload build artifacts (optional)
+      if: failure()  # Upload artifacts if the build fails
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: target/  # Adjust the path if necessary to include relevant artifacts
