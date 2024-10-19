@@ -1,11 +1,10 @@
 package com.FibNum2025Oct19;
 
-public class RecursiveFibonacciStrategy implements FibonacciStrategy {
+public class RecursiveFibonacciStrategy extends AbstractFibonacciStrategy {
 
     @Override
     public int getFibonacciNumber(int index) {
-        if (index == 0) return 0;
-        if (index == 1) return 1;
+        if (index < 2) return handleBaseCases(index);
         return getFibonacciNumber(index - 1) + getFibonacciNumber(index - 2);
     }
 }
