@@ -8,3 +8,4 @@ public class RecursiveFibonacciStrategy extends AbstractFibonacciStrategy {
         return getFibonacciNumber(index - 1) + getFibonacciNumber(index - 2);
     }
 }
+
